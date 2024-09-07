@@ -1,0 +1,28 @@
+{
+  "en": {
+    "title": "RAG Client by ML",
+    "configuration": "Configuration",
+    "num_results": "Number of the results",
+    "enter_question": "Enter your question:",
+    "submit": "Submit",
+    "searching": "Searching documents and generating answer...",
+    "ai_response": "AI Response:",
+    "show_results": "Show Results",
+    "result": "Result",
+    "warning": "Please enter a question.",
+    "current_language": "Current Language"
+  },
+  "cs": {
+    "title": "RAG Klient od ML",
+    "configuration": "Konfigurace",
+    "num_results": "Počet výsledků",
+    "enter_question": "Zadejte svou otázku:",
+    "submit": "Odeslat",
+    "searching": "Vyhledávání v dokumentech a generování odpovědi...",
+    "ai_response": "Odpověď AI:",
+    "show_results": "Zobrazit výsledky",
+    "result": "Výsledek",
+    "warning": "Prosím zadejte otázku.",
+    "current_language": "Aktuální jazyk"
+  }
+}
