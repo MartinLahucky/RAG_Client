@@ -31,3 +31,13 @@ def setup_directories():
             print(f"Directory '{directory}' created.")
         else:
             print(f"Directory '{directory}' already exists.")
+
+# In your main.py or a separate script, add the following code to reload the localization data
+
+def reload_localization():
+    db = MongoDB()
+    db.reload_localization()
+    db.close_connection()
+
+if __name__ == "__main__":
+    reload_localization()
