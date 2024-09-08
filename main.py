@@ -1,4 +1,6 @@
+import asyncio
 import streamlit as st
+from logger import setup_logging
 
 # Inicializace session state pro jazyk a historii
 if 'language' not in st.session_state:
@@ -15,21 +17,21 @@ import utils
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
-import json
 from fill_db import load_and_process_documents
 from utils import get_mongodb_client
+
 
 utils.setup_directories()
 load_dotenv()
 
-def initialize_database():
-    load_and_process_documents()
+async def load_database():
+    await load_and_process_documents()
 
 db = get_mongodb_client()
 openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def get_relevant_documents(query, n_results):
-    results = db.search_documents('pdfs', query, n_results)
+    results = db.search_documents('data', query, n_results)
     return results
 
 def get_openai_response(system_prompt, user_query, relevant_docs):
@@ -104,4 +106,5 @@ if st.button(settings.t("show_history")):
         st.warning(settings.t("no_history"))
 
 if __name__ == "__main__":
-    initialize_database()
+    setup_logging()
+    asyncio.run(load_database())
