@@ -1,11 +1,12 @@
 import json
 import os
 import uuid
-
+from datetime import timedelta, datetime
 import pymongo
 from dotenv import load_dotenv
-from pymongo import MongoClient, IndexModel, ASCENDING
-from pymongo.errors import DuplicateKeyError
+from pymongo import MongoClient
+
+import logger
 
 load_dotenv()
 
@@ -17,15 +18,15 @@ class MongoDB:
         self.ensure_indexes()
 
     def ensure_indexes(self):
-        pdfs_collection = self.db["pdfs"]
+        collection = self.db['data']
 
         # Kontrola existujících indexů a mazání, pokud existují
-        indexes = pdfs_collection.index_information()
+        indexes = collection.index_information()
         if "metadata.file_hash_1" in indexes:
-            pdfs_collection.drop_index("metadata.file_hash_1")
+            collection.drop_index("metadata.file_hash_1")
 
         # Najdeme duplicity v file_hash
-        duplicates = pdfs_collection.aggregate([
+        duplicates = collection.aggregate([
             {"$group": {"_id": "$metadata.file_hash", "count": {"$sum": 1}}},
             {"$match": {"count": {"$gt": 1}}}
         ])
@@ -35,16 +36,16 @@ class MongoDB:
             print(f"Duplicate found: {dup['_id']} with {dup['count']} occurrences.")
 
             # Najdeme všechny dokumenty s duplicitním file_hash
-            duplicate_docs = pdfs_collection.find({"metadata.file_hash": dup["_id"]})
+            duplicate_docs = collection.find({"metadata.file_hash": dup["_id"]})
 
             # Pro každý duplicitní dokument vygenerujeme unikátní hash
             for doc in duplicate_docs:
                 unique_hash = str(uuid.uuid4())
                 print(f"Updating document ID {doc['_id']} with new file_hash: {unique_hash}")
-                pdfs_collection.update_one({"_id": doc["_id"]}, {"$set": {"metadata.file_hash": unique_hash}})
+                collection.update_one({"_id": doc["_id"]}, {"$set": {"metadata.file_hash": unique_hash}})
 
         # Po odstranění duplicit vytvoříme unikátní index
-        pdfs_collection.create_index([("metadata.file_hash", pymongo.ASCENDING)], unique=True)
+        collection.create_index([("metadata.file_hash", pymongo.ASCENDING)], unique=True)
         print("Index 'metadata.file_hash_1' byl vytvořen.")
 
     def get_collection(self, collection_name):
@@ -117,3 +118,10 @@ class MongoDB:
         with open('settings/localization.json', 'r', encoding='utf-8') as f:
             localization = json.load(f)
         self.update_localization(localization)
+
+    def clear_all_data(self):
+        collections = self.db.list_collection_names()
+        for collection_name in collections:
+            self.db.drop_collection(collection_name)
+            logger.log_warning(f"Dropped collection: {collection_name}")
+            print(f"Dropped collection: {collection_name}")

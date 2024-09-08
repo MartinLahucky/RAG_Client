@@ -40,4 +40,6 @@ def reload_localization():
     db.close_connection()
 
 if __name__ == "__main__":
+    db = get_mongodb_client()
+    db.clear_all_data()
     reload_localization()

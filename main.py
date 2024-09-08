@@ -1,4 +1,5 @@
 import streamlit as st
+from logger import setup_logging
 
 # Inicializace session state pro jazyk a historii
 if 'language' not in st.session_state:
@@ -22,14 +23,14 @@ from utils import get_mongodb_client
 utils.setup_directories()
 load_dotenv()
 
-def initialize_database():
+def load_database():
     load_and_process_documents()
 
 db = get_mongodb_client()
 openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def get_relevant_documents(query, n_results):
-    results = db.search_documents('pdfs', query, n_results)
+    results = db.search_documents('data', query, n_results)
     return results
 
 def get_openai_response(system_prompt, user_query, relevant_docs):
@@ -104,4 +105,5 @@ if st.button(settings.t("show_history")):
         st.warning(settings.t("no_history"))
 
 if __name__ == "__main__":
-    initialize_database()
+    setup_logging()
+    load_database()
